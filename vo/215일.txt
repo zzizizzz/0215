@@ -1,0 +1,183 @@
+2/15일
+
+Model2- 0.0.1.jar 라이브러리를 이용한 웹 애플리케이션 개발
+주요 API
+	- 요청핸들러 메소드
+		- 클라이언트의 HTTP 요청을 처리하는 메소드다.
+		- 역할(수정/수정/삭제(redirect), 내부이동(내부이동할 JSP페이지 경로) 요청핸들러의 반환값이 다르다)
+			- 클라이언트의 HTTP 요청을 처리한다.
+				* 추가/수정작업
+				  * 요청파라미터 값을 조회한다.
+				  * 조회된 요청파라밈터 값을 객체를 생성해서 담는다.
+				  * 값이 담긴 객체를 서비스 혹은 DAO에 전달해서 데이터 베이스에 반영시킨다.
+				  * 재요청 URL을 반환한다.(수정/삭제할경우) 조회작업을 위한 URL 재요청을반환해 줘야한다.
+					@RequestMapping(path ="/요청URL")
+					public String 메소드 이름(HttpServletRequest req, HttpServletResponse resp) throws Exception{ (반환타입은 언제나 String)
+						// 클라이언트의 HTTP 요청을 처리하는 자바코드를 포함한다.
+						return "redirect:재요청URL"
+					}	
+
+				* 조회작업
+  				  * 조회된 요청파라미터 값을 서비스 혹은 DAO에 전달해서 데이터 베이스에서 데이터를 조회한다.
+				  * 조회된 정보를 뷰 페이지에 전달하기 위해서 요청 객체를 속성으로 저장한다.(조회하기때문에 속성으로 저장)
+				  * 내부이동할 URL을 반환한다.
+					@RequestMapping(path ="/요청URL")
+					public String 메소드 이름(HttpServletRequest req, HttpServletResponse resp) throws Exception{ (반환타입은 언제나 String)
+						// 클라이언트의 HTTP 요청을 처리하는 자바코드를 포함한다.
+						return "내부이동할 JSP페이지 경로"
+					}
+
+
+		- 구조 (구조가 아니면 실행이 되지 않음)
+			@RequestMapping(path ="/요청URL")
+			public String 메소드 이름(HttpServletRequest req, HttpServletResponse resp) throws Exception{ (반환타입은 언제나 String)
+				// 클라이언트의 HTTP 요청을 처리하는 자바코드를 포함한다.
+				
+			}	
+
+	- FrontControllerServlet (Mapping정보를 분석해서 알아서 실행된다)
+		- model2.jar 라이브러리의 핵심 클래스다.
+		- HttpServlet 클래스를 상속받는 서블릿 클래스다.
+		- 역할
+			- 클라이언트의 모든 요청을 접수 받는다.
+			- 클라이언트의 요청을 분석한다.
+				*요청 URL이 무엇인지? 요청방식이 무엇인지? 분석한다.
+			- 컨트롤러 클래스에서 적절한 요청핸들러 메소드를 실행한다.(내부적으로)
+			- 요청핸들러 메소드 실행이 완료되면 뷰 페이지로 내부이동 혹은 재요청 URL을 응답으로 보낸다.(내부적으로 구현되어있음)
+	
+	- @Controller(클래스에 붙어 있어야 분석한다)
+		- 해당 클래스가 컨트롤러 클래스임을 나타내는 어노테이션이다.
+		- model2.jar 라이브러리는 @Controller 어노테이션이 부착된 클래스를 감지하고 ,
+		  매핑정보를 분석한다.
+		- 사용예
+			@Controller
+			public class MainController {
+			
+
+			}
+
+
+	- @RequestMapping(클래스 매소드에 부탁할수 있다)
+		- 매핑정보를 정의하는 어노테이션이다.
+		- 클래스 혹은 요청핸들러 메소드에 부착하는 어노테이션이다.
+		- 주요 프로퍼티
+			path 
+				- 요청 URL을 지정한다.
+				- 요청 URL은 반드시 "/"로 시작한다.(절대경로와 상관없음)
+			method
+				- 요청 방식을 지정한다.
+				- 기본값은 HttpMethod.GET이다.(GET이 기본값) 지정하지 않으면 GET으로 지정됨
+				- HttpMethod.GET 혹은 HttpMethod.POST를 지정할수 있다.
+		- 사용예 (요청 URL를 실행시켜준다)
+			@Controller
+			@RequestMapping(path = "/board")( 적지않아도 상관없다, 필수아님)
+			public class BoardController{
+	
+				@RequestMapping(path ="/list.do") (요청 핸들러 메소드)
+				public String boards(HttpServletRequest request HttpServletResponse reponse, ){
+
+				}
+				@RequestMapping(path ="/create.do")(요청 핸들러 메소드)
+				public String form(HttpServletRequest request HttpServletResponse reponse, ){
+
+				}
+				@RequestMapping(path ="/create.do", method=HttpMethod.POST)  path = url을 적고 method는 post, get을적는다.((요청 핸들러 메소드))
+				public String save(HttpServletRequest request HttpServletResponse reponse, ){
+
+				}
+			}
+
+
+
+	-설정하기
+
+		1.model2-0.0.1.jar를 WEB-INF/lib 폴더에 복사한다.
+		2.web.xml(배포 기술자, Deployment Descriptor)에 FrontControllerServlet 배포하기
+			<servlet>
+			<servlet-name> forntControllerServlet</setvlet-name>
+			<servlet-class> kr.co.jhta.model2.FrontControllerServlet<servlet-class>
+			</servlet>
+
+			<servlet-mapping>
+				<servlet-name>frontControllerServlet</servlet-name>
+				<url-pattern>*.do</url-pattern>(.아무 이름 상관없음)
+			</servlet-mapping>
+
+
+
+
+요청이 와야지 객체를 생성..
+서버가 시작되면 프론트 컨트롤러가 실행된다. 
+요청 방식이 선생님이 만드시 맵핑에 담겨있고 출력된거
+
+
+
+지금(회원가입) jsp를 만들지 않고 자바로 
+public String register(req, resp) {
+	String id = req.getparameter("id");
+	String password = req.getparameter("password");
+
+	....
+User user = new User();
+user.setId(id);
+user.setPassword("password");
+
+userService.register(user);
+
+return redirect:home.do";
+
+}
+
+
+
+UserService.java
+public void register(User user){
+	// 아이디 중복검사 로직수행
+	// 이메일 중복검사 로직수행
+	userDao.insertUser(user);
+}
+
+UserDao.java
+public User getUserById(String id){
+	return
+ibatis.queryForObject("getUserById",id)
+}
+
+public void insertUser(User user) {
+	ibatis.insert("insertUser", user);
+}
+
+
+
+현재 주소
+	localhost/home.do
+
+기준 주소
+	localhost/
+요청할 주소
+	localhost/board/list.do
+
+링크에 정의할 주소
+	상대경로 = 기준주소 + 링크주소
+	<a href="board/list.do>
+
+기준이 있기 때문에 /적을 필요가 없다.(상대 경로 / 절대경로 )
+
+	절대 경로 = localhost + 링크주소
+	<a href ="/board/list.do>절대경로
+
+<if test="조건식">
+
+</if>
+
+<forEach var = "변수명" items ="${속성명}">
+</forEach>
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix ="c"%>
+<%@ taglib uri = "/spring/form" prefix"form"%>
+이 라이브러리를 jsp에서 사용하겠다는 의미
+
+둘다 if문을 있을수 있으므로 중복을 맞기 위해서 sort-name를 붙여서 사용한다.
+
+
+
